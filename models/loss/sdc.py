@@ -50,12 +50,8 @@ class SDCLoss(nn.Module):
         ##### calculate cosine similarity between pairs #####
         a_idx, b_idx = self.find_pairs(orig_x, 'simple')
         a, b = hash_x[a_idx], hash_x[b_idx]
-        if 's' in self.rec_type:
-            hash_dist_ab = self._one_way_distance_compute(a, b.sign())
-            hash_dist_ba = self._one_way_distance_compute(b, a.sign())
-        else:
-            hash_dist_ab = self._one_way_distance_compute(a, b)
-            hash_dist_ba = self._one_way_distance_compute(b, a)
+        hash_dist_ab = self._one_way_distance_compute(a, b)
+        hash_dist_ba = self._one_way_distance_compute(b, a)
         orig_dist = F.cosine_similarity(orig_x[a_idx], orig_x[b_idx]).detach()
 
         ##### normalize distance #####
