@@ -5,6 +5,8 @@ reset: False
 multiclass: False
 R: 1000
 norm: 2
+resize: 224
+crop: 224
 
 train_dataset:
   _target_: utils.datasets.cifar
