@@ -1,0 +1,12 @@
+# @package _global_
+
+dataset:
+  train_dataset:
+    transform:
+      - _target_: torchvision.transforms.Resize
+        size: ${dataset.resize}
+      - _target_: torchvision.transforms.CenterCrop
+        size: ${dataset.crop}
+      - _target_: torchvision.transforms.ToTensor
+      - _target_: utils.transforms.normalize_transform
+        norm: ${dataset.norm}
