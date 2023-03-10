@@ -35,8 +35,8 @@ class SDCTrainer(BaseTrainer):
         # clear gradient
         self.optimizer.zero_grad()
 
-        feats, codes, binaries = self.model(image)
-        loss = self.criterion(feats, codes, binaries)
+        feats, codes = self.model(image)
+        loss = self.criterion(feats, codes)
 
         # backward and update
         loss.backward()
