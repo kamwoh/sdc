@@ -1,2 +1,3 @@
 _target_: models.backbone.vgg16.VGG16
 pretrained: True
+remove_dropout: True

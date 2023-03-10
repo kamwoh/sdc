@@ -6,7 +6,7 @@ from models.backbone.base import BaseNet
 
 
 class VGG16(BaseNet):
-    def __init__(self, pretrained=True, **kwargs):
+    def __init__(self, pretrained=True, remove_dropout=True, **kwargs):
         super(VGG16, self).__init__()
 
         if pretrained:
@@ -19,6 +19,8 @@ class VGG16(BaseNet):
         fc = []
         lastidx = len(model.classifier) - 1
         for i in range(lastidx):
+            if isinstance(model.classifier[i], nn.Dropout) and remove_dropout:
+                continue
             fc.append(model.classifier[i])
         self.fc = nn.Sequential(*fc)
         self.features_size = model.classifier[lastidx].in_features
