@@ -17,3 +17,4 @@ criterion:
   beta_ab: 5
   ortho_constraint: True
 
+backbone_lr_scale: 0
