@@ -3,7 +3,7 @@ import torch.nn as nn
 from models.arch.base import BaseNet
 
 
-class UnsupGreedyHash(BaseNet):
+class SDC(BaseNet):
     def __init__(self,
                  backbone: nn.Module,
                  nbit: int,

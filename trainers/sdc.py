@@ -3,7 +3,7 @@ import torch
 from trainers.base import BaseTrainer
 
 
-class UnsupGHTrainer(BaseTrainer):
+class SDCTrainer(BaseTrainer):
     def inference_one_batch(self, *args, **kwargs):
         device = self.device
 

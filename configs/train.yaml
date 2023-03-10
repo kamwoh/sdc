@@ -3,9 +3,9 @@ defaults:
   - /dataset: imagenet100
   - /transforms: null
   - /scheduler: step
-  - /model: sdc
   - /backbone: vgg16
   - /optim: adam
+  - /model: sdc
 
 dataset_name: ${hydra:runtime.choices.dataset}
 

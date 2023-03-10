@@ -1,0 +1,16 @@
+# @package _global_
+
+model:
+  _target_: models.arch.sdc.SDC
+
+trainer:
+  _target_: trainers.sdc.SDCTrainer
+
+criterion:
+  _target_: models.loss.sdc.SDCLoss
+  rec: 1
+  quan: 1
+  quan_type: "cs"
+  beta_ab: 5
+  ortho_constraint: True
+
