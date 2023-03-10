@@ -2,6 +2,9 @@
 
 model:
   _target_: models.arch.sdc.SDC
+  backbone: ${backbone}
+  nbit: 64
+  nclass: ${dataset.nclass}
 
 trainer:
   _target_: trainers.sdc.SDCTrainer
