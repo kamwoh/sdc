@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import vgg16, VGG16_Weights
+from torchvision.models import vgg16
 
 from models.backbone.base import BaseNet
 
@@ -9,10 +9,7 @@ class VGG16(BaseNet):
     def __init__(self, pretrained=True, remove_dropout=True, **kwargs):
         super(VGG16, self).__init__()
 
-        if pretrained:
-            model = vgg16(weights=VGG16_Weights.IMAGENET1K_V1)
-        else:
-            model = vgg16()
+        model = vgg16(pretrained=pretrained)
 
         self.features = model.features
         self.avgpool = model.avgpool
