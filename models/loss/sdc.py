@@ -72,13 +72,15 @@ class SDCLoss(nn.Module):
         rand_dist = torch.tensor(rand_dist * 2 - 1).to(orig_dist.device).float()
 
         if self.ortho_constraint:
-            rand_dist = rand_dist.clamp(min=0)
+            rand_dist = rand_dist.relu()
 
         ##### distance reconstruction loss #####
         reduction = 'mean'
 
-        loss_rec_ab = F.mse_loss(hash_dist_ab, rand_dist, reduction=reduction)
-        loss_rec_ba = F.mse_loss(hash_dist_ba, rand_dist, reduction=reduction)
+        # loss_rec_ab = F.l1_loss(hash_dist_ab, rand_dist, reduction=reduction)
+        loss_rec_ab = (hash_dist_ab - rand_dist).relu().mean()
+        # loss_rec_ba = F.l1_loss(hash_dist_ba, rand_dist, reduction=reduction)
+        loss_rec_ba = (hash_dist_ba - rand_dist).relu().mean()
 
         loss_rec = 0.5 * loss_rec_ab + 0.5 * loss_rec_ba
 
