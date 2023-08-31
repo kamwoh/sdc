@@ -197,7 +197,7 @@ def calculate_mAP(db_codes, db_labels,
     db_labels = db_labels.cpu()  # .numpy()
     test_labels = test_labels.cpu()  # .numpy()
 
-    if not multiclass:
+    if not multiclass and len(db_labels.size()) == 2:
         db_labels = db_labels.argmax(1)
         test_labels = test_labels.argmax(1)
 

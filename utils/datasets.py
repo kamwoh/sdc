@@ -119,6 +119,7 @@ class HashingDataset(Dataset):
 
         if self.target_transform is not None:
             target = self.target_transform(target)
+
         return img, target, index
 
     def __len__(self):
@@ -192,6 +193,28 @@ class LandmarkDescriptorDataset(DescriptorDataset):
 
     def __len__(self):
         return len(self.data_dict['id'])
+
+
+class GLDv2EmbeddingDataset(Dataset):
+    # todo: with labels
+    def __init__(self, root, filename, id_filename):
+        self.data_list = torch.load(os.path.join(root, filename), map_location=torch.device('cpu'))
+        self.data_list = F.normalize(self.data_list, p=2, dim=-1)
+        self.id_list = [l.strip() for l in open(os.path.join(root, id_filename)).readlines()]
+        self.filename = filename
+        self.id_filename = id_filename
+        self.root = root
+
+        logging.info(f'Number of data in {filename}: {self.__len__()}')
+
+    def __getitem__(self, index):
+        embed = self.data_list[index]
+        landmark_id = self.id_list[index]
+
+        return embed, 0, (landmark_id, index)
+
+    def __len__(self):
+        return len(self.data_list)
 
 
 class GLDv2Dataset(HashingDataset):
@@ -373,6 +396,15 @@ def cifar(nclass, **kwargs):
 
                 index_for_db = index_of_class[query_n:].tolist()
                 index_for_train = index_for_db[:train_n]
+            elif ep == 11:  # exclude training
+                query_n = 100  # // (nclass // 10)
+                train_n = 500  # // (nclass // 10)
+
+                index_for_query = index_of_class[:query_n].tolist()
+
+                index_for_db = index_of_class[query_n:].tolist()
+                index_for_train = index_for_db[:train_n]
+                index_for_db = index_for_db[train_n:]
             elif ep == 2:
                 query_n = 1000  # // (nclass // 10)
                 train_n = 500  # // (nclass // 10)
@@ -387,7 +419,7 @@ def cifar(nclass, **kwargs):
                 index_for_query = index_of_class[:query_n].tolist()
                 index_for_db = index_of_class[query_n:].tolist()
                 index_for_train = index_for_db
-            else:  # no shuffle
+            elif ep == 4:  # no shuffle
                 train_n = 500
 
                 index_for_query = data_id[(class_mask & (~is_train))].tolist()  # 1000
@@ -395,6 +427,12 @@ def cifar(nclass, **kwargs):
 
                 train_randidx = torch.randperm(len(index_for_db))[:train_n].numpy()
                 index_for_train = index_for_db[train_randidx].tolist()
+                index_for_db = index_for_db.tolist()
+            else:  # default split + train = db
+                index_for_query = data_id[(class_mask & (~is_train))].tolist()  # 1000
+                index_for_db = data_id[(class_mask & is_train)]
+
+                index_for_train = index_for_db.tolist()
                 index_for_db = index_for_db.tolist()
 
             train_data_index.extend(index_for_train)

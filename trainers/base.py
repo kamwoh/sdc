@@ -30,6 +30,9 @@ class BaseTrainer:
 
         self.device = torch.device(config['device'])
 
+    def forward_one_batch(self, *args, **kwargs):
+        raise NotImplemented
+
     def load_criterion(self):
         self.criterion = hydra.utils.instantiate(self.config.criterion)
 
@@ -66,30 +69,6 @@ class BaseTrainer:
                 for k, v in state.items():
                     if torch.is_tensor(v):
                         state[k] = v.to(device)
-
-    def is_ready_for_training(self):
-        r = True
-
-        for item in [self.dataset,
-                     self.dataloader,
-                     self.model,
-                     self.optimizer,
-                     self.scheduler,
-                     self.criterion]:
-            r = r and item is not None
-
-        return r
-
-    def is_ready_for_inference(self):
-        r = True
-
-        for item in [self.dataset,
-                     self.dataloader,
-                     self.model,
-                     self.criterion]:
-            r = r and item is not None
-
-        return r
 
     def load_dataset(self):
         logging.info('Creating Datasets')
@@ -133,9 +112,9 @@ class BaseTrainer:
         lr = self.config.optim.lr
         backbone_lr_scale = self.config.backbone_lr_scale
 
-        params = [{'params': self.model.get_backbone().parameters(),
+        params = [{'params': list(self.model.get_backbone().parameters()),
                    'lr': lr * backbone_lr_scale},
-                  {'params': self.model.get_training_modules().parameters()}]
+                  {'params': list(self.model.get_training_modules().parameters())}]
 
         if backbone_lr_scale == 0:  # if not training backbone, freeze it
             logging.info('Freezing backbone')
@@ -195,7 +174,10 @@ class BaseTrainer:
                     output['labels'] = data[1]  # labels
 
                     for key in output:
-                        ret[key].append(output[key].cpu())
+                        if hasattr(output[key], 'cpu'):
+                            ret[key].append(output[key].cpu())
+                        else:
+                            ret[key].append(output[key])
 
             res = {}
             for key in ret:
@@ -247,8 +229,6 @@ class BaseTrainer:
         }
 
     def inference_one_epoch(self, datakey='test', return_codes=False, **kwargs):
-        assert self.is_ready_for_inference()
-
         self.model.eval()
         self.criterion.eval()
         meters = defaultdict(AverageMeter)
@@ -264,7 +244,10 @@ class BaseTrainer:
 
                 if return_codes:
                     for key in output:
-                        ret[key].append(output[key].cpu())
+                        if hasattr(output[key], 'cpu'):
+                            ret[key].append(output[key].cpu())
+                        else:
+                            ret[key].append(output[key])
 
         if return_codes:
             res = {}
@@ -313,8 +296,6 @@ class BaseTrainer:
         Args:
             kwargs: {'ep': current epoch}
         """
-        assert self.is_ready_for_training()
-
         self.model.train()
         self.criterion.train()
         meters = defaultdict(AverageMeter)

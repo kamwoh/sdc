@@ -56,6 +56,16 @@ sending an email to `kamwoh.ng at surrey.ac.uk`.
 
 # Implementations
 
+We also implemented (some copied from original authors):
+
+1. Unsupervised GreedyHash
+2. BiHalf
+3. Weighted Contrastive Hashing
+4. Naturally Sort Hash
+5. CIBHash
+
+See `models/arch`, `models/trainers` and `models/loss`.
+
 # Citation
 
 If you find this work useful for your research, please cite

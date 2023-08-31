@@ -1,3 +1,6 @@
+import random
+
+from PIL import ImageFilter
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 
@@ -78,3 +81,22 @@ def normalize_transform(norm):
 
 def to_pil():
     return transforms.ToPILImage()
+
+
+def grayscale_to_color():
+    def f(data):
+        return data.repeat(3, 1, 1)
+
+    return f
+
+
+class GaussianBlur(object):
+    """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
+
+    def __init__(self, sigma=[0.1, 2.0]):
+        self.sigma = sigma
+
+    def __call__(self, x):
+        sigma = random.uniform(self.sigma[0], self.sigma[1])
+        x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
+        return x
