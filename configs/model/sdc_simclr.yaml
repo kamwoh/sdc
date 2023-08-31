@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /transforms: no_augmentation
+  - override /transforms: cibhash
   - _self_
 
 model:
@@ -19,6 +19,10 @@ criterion:
   quan: 1
   quan_type: "cs"
   beta_ab: 5
-  ortho_constraint: False
+  ortho_constraint: True
+  cont: 1
+  contrastive:
+    _target_: models.loss.simclr.SimCLRLoss
+    temperature: 0.3
 
 backbone_lr_scale: 0

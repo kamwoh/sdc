@@ -1,0 +1,35 @@
+# @package _global_
+defaults:
+  - override /dataset: cifar10
+  - override /transforms: cibhash
+  - override /scheduler: step
+  - override /backbone: vit_base_hf
+  - override /optim: adam
+  - _self_
+
+model:
+  _target_: models.arch.wch.WCH
+  transformer: ${backbone}
+  nbit: 64
+  tau_w: 0.2
+
+dataset:
+  ep: 1
+
+trainer:
+  _target_: trainers.wch.WCHTrainer
+
+scheduler:
+  step_size: ${epochs}
+
+criterion:
+  _target_: models.loss.wch.WCHLoss
+  temperature: 0.3
+  normalize_w: False
+
+optim:
+  lr: 0.0001
+
+backbone_lr_scale: 0
+epochs: 100
+batch_size: 64

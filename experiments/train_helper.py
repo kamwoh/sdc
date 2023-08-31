@@ -34,18 +34,8 @@ def inference_one_batch_for_gldv2(self, *args, **kwargs):
     image, labels, index = data
     image, labels = image.to(device), labels.to(device)
 
-    arch_name = self.config['arch']
-
     with torch.no_grad():
-        if check_keys(arch_name, ['cibhash']):
-            feats = self.model.backbone(image)
-            codes = self.model.encoder(feats)
-        elif arch_name == '':  # shallow methods
-            feats = image
-            codes = self.model(feats)
-        else:
-            feats, codes = self.model(image)[:2]
-
+        codes = self.forward_one_batch(image)['codes']
         ids = index[0]
 
     return {
@@ -200,9 +190,9 @@ class RetrievalExperiment:
 
     def evaluation(self, ep, trainer, config):
         landmark_gt = None
-        if self.config.dataset_name in ['gldv2', 'gldv2_delg']:
+        if self.config.dataset_name in ['gldv2', 'gldv2_delgembed']:
             trainer.__class__.inference_one_batch = inference_one_batch_for_gldv2
-            landmark_gt_path = os.path.join(trainer.dataloader['test'].dataset.root, 'ground_truth.csv')
+            landmark_gt_path = self.config.dataset.ground_truth_path
             landmark_gt = pd.read_csv(landmark_gt_path)  # id = index id, images = images id in database
 
         res = {'ep': ep + 1}
@@ -227,13 +217,18 @@ class RetrievalExperiment:
 
         for postfix, codes_name in zip(postfixes, all_codes_names):
             logging.info(f'Evaluating for "{codes_name}"')
-            if self.config.dataset_name in ['gldv2', 'gldv2_delg']:
+            if self.config.dataset_name in ['gldv2', 'gldv2_delgembed']:
                 # to cpu here as calculate_mAP needs many GPU memory for gldv2
                 db_out[codes_name] = db_out[codes_name].cpu()
                 test_out[codes_name] = test_out[codes_name].cpu()
 
-            mAP, recalls, precisions = calculate_mAP(db_out[codes_name], db_out['labels'],
-                                                     test_out[codes_name], test_out['labels'],
+            if self.config.get('zero_mean_eval'):
+                mean = db_out[codes_name].mean(dim=0, keepdim=True)
+            else:
+                mean = 0
+
+            mAP, recalls, precisions = calculate_mAP(db_out[codes_name] - mean, db_out['labels'],
+                                                     test_out[codes_name] - mean, test_out['labels'],
                                                      config.dataset.R, dist_metric=config.dist_metric,
                                                      PRs=[1, 5, 10], landmark_gt=landmark_gt,
                                                      db_id=db_out.get('id'),

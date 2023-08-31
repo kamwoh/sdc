@@ -1,7 +1,7 @@
 defaults:
   - _self_
   - /dataset: imagenet100
-  - /transforms: null
+  - /transforms: no_augmentation
   - /scheduler: step
   - /backbone: vgg16
   - /optim: adam

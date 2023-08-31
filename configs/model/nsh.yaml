@@ -1,0 +1,37 @@
+# @package _global_
+defaults:
+  - override /dataset: cifar10
+  - override /transforms: mocov2
+  - override /scheduler: step
+  - override /backbone: resnet50
+  - override /optim: adam
+  - _self_
+
+model:
+  _target_: models.arch.nsh.NSH
+  backbone: ${backbone}
+  nbit: 64
+  nclass: ${dataset.nclass}
+
+dataset:
+  ep: 5
+
+trainer:
+  _target_: trainers.nsh.NSHTrainer
+
+scheduler:
+  step_size: ${epochs}
+
+criterion:
+  _target_: models.loss.nsh.NSHLoss
+  m: 2
+  quan: 1
+  tau: 0.3
+  softsort_tau: ${eval:"float(1 / ${model.nbit})"}
+
+optim:
+  lr: 0.00001
+
+backbone_lr_scale: 0
+epochs: 200
+batch_size: 50

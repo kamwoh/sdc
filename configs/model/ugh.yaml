@@ -1,0 +1,16 @@
+# @package _global_
+
+model:
+  _target_: models.arch.gh.UnsupGreedyHash
+  backbone: ${backbone}
+  nbit: 64
+  nclass: ${dataset.nclass}
+
+trainer:
+  _target_: trainers.gh.UnsupGHTrainer
+
+criterion:
+  _target_: models.loss.gh.UnsupGHLoss
+  multiclass: ${dataset.multiclass}
+  alpha: 0.1  # quantization error
+  pow: 3.0

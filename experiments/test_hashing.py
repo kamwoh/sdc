@@ -31,7 +31,7 @@ class RetrievalEvaluation:
             modelfn = 'best'
 
         trainer = hydra.utils.instantiate(config.trainer, config)
-        trainer.load_dataset(load_db=True)
+        trainer.load_dataset()
         trainer.load_dataloader()
         if config.exp not in ['descriptor', 'extract']:
             trainer.load_for_inference(logdir)
@@ -41,9 +41,13 @@ class RetrievalEvaluation:
             trainer.load_model_state(f'{logdir}/models/{modelfn}.pth')
         trainer.to_device()
 
-        eval_logdir = config.eval_logdir
-        os.makedirs(eval_logdir, exist_ok=True)
-        yaml.dump(OmegaConf.to_object(config), open(os.path.join(eval_logdir, 'eval_config.yaml'), 'w+'))
+        if config.exp not in ['descriptor', 'extract']:
+            eval_logdir = config.eval_logdir
+            os.makedirs(eval_logdir, exist_ok=True)
+            yaml.dump(OmegaConf.to_object(config), open(os.path.join(eval_logdir, 'eval_config.yaml'), 'w+'))
+        else:
+            eval_logdir = config.logdir
+            os.makedirs(eval_logdir, exist_ok=True)
 
         self.config = config
         self.trainer = trainer
@@ -57,6 +61,11 @@ class RetrievalEvaluation:
 
         test_meters, test_out = self.trainer.inference_one_epoch('test', True)
         db_meters, db_out = self.trainer.inference_one_epoch('db', True)
+
+        if self.config.exp == 'extract':
+            _, train_out = self.trainer.inference_one_epoch('train_no_shuffle', True)
+        else:
+            train_out = None
 
         for key in test_meters: res['test_' + key] = test_meters[key].avg
         for key in db_meters: res['db_' + key] = db_meters[key].avg
@@ -122,8 +131,13 @@ class RetrievalEvaluation:
             json.dump(res, open(self.eval_logdir + '/history.json', 'w+'))
 
         if self.config.save_code or self.config.exp == 'extract':
-            print('Saving code')
-            io.fast_save({'test': test_out, 'db': db_out}, self.eval_logdir + '/outputs.pth')
+            if self.config.exp != 'extract':
+                print('Saving code')
+                io.fast_save({'test': test_out, 'db': db_out}, self.eval_logdir + '/outputs.pth')
+            else:  # is extract
+                io.fast_save(test_out, self.eval_logdir + '/test_out.pth')
+                io.fast_save(db_out, self.eval_logdir + '/db_out.pth')
+                io.fast_save(train_out, self.eval_logdir + '/train_out.pth')
 
         total_time = time.time() - self.start_time
         print(f'Testing End at {datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
