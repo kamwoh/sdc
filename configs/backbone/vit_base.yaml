@@ -1,0 +1,3 @@
+_target_: models.backbone.vit.ViTBase
+pretrained: True
+pool_method: "cls_token"

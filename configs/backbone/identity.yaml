@@ -1,0 +1,2 @@
+_target_: models.backbone.identity.Identity
+features_size: ${dataset.features_size}
