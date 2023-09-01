@@ -1,6 +1,6 @@
 # Unsupervised Hashing with Similarity Distribution Calibration
 
-[ArXiv](https://arxiv.org/abs/2302.07669) | <a href="https://github.com/kamwoh/sdc/blob/main/docs/suppmat.pdf">
+[ArXiv](https://arxiv.org/abs/2302.07669) | <a href="https://github.com/kamwoh/sdc/blob/master/docs/suppmat.pdf">
 Supplementary Material</a>
 
 ### Official pytorch implementation of the paper: "Unsupervised Hashing with Similarity Distribution Calibration"
