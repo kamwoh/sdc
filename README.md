@@ -5,7 +5,7 @@ Supplementary Material</a>
 
 ### Official pytorch implementation of the paper: "Unsupervised Hashing with Similarity Distribution Calibration"
 
-#### BMVC 2023
+#### BMVC 2023 (Oral)
 
 # Description
 
